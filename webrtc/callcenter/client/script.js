@@ -5,12 +5,18 @@ const remoteVideo = document.getElementById('remoteVideo');
 const appDiv = document.getElementById('app');
 const meSpan = document.getElementById('me');
 const hangupBtn = document.getElementById('hangup');
+const callBtn = document.getElementById('call');
+const incomingDiv = document.getElementById('incoming');
+const incomingUserSpan = document.getElementById('incoming-user');
+const acceptBtn = document.getElementById('accept');
+const declineBtn = document.getElementById('decline');
 
 let socket;
 let username;
 let peer;
 let localStream;
 let currentTarget;
+let selectedUser;
 
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -63,9 +69,14 @@ function updateUserList(list) {
   list.filter((u) => u !== username).forEach((user) => {
     const li = document.createElement('li');
     li.textContent = user;
-    li.addEventListener('click', () => startCall(user));
+    li.addEventListener('click', () => selectUser(user));
     usersUl.appendChild(li);
   });
+}
+
+function selectUser(user) {
+  selectedUser = user;
+  callBtn.style.display = 'block';
 }
 
 async function ensureLocalStream() {
@@ -76,7 +87,9 @@ async function ensureLocalStream() {
 }
 
 function createPeer(target) {
-  const pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection({
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  });
   pc.onicecandidate = (e) => {
     if (e.candidate) {
       socket.send(
@@ -103,26 +116,35 @@ async function startCall(target) {
   const offer = await peer.createOffer();
   await peer.setLocalDescription(offer);
   socket.send(JSON.stringify({ type: 'offer', payload: { target, offer } }));
+  callBtn.style.display = 'none';
   hangupBtn.style.display = 'block';
 }
 
 async function handleOffer(payload) {
-  const accept = confirm(`${payload.from} is calling you. Accept?`);
-  if (!accept) {
-    socket.send(JSON.stringify({ type: 'hangup', payload: { target: payload.from } }));
-    return;
-  }
-  await ensureLocalStream();
-  currentTarget = payload.from;
-  peer = createPeer(payload.from);
-  localStream.getTracks().forEach((t) => peer.addTrack(t, localStream));
-  await peer.setRemoteDescription(payload.offer);
-  const answer = await peer.createAnswer();
-  await peer.setLocalDescription(answer);
-  socket.send(
-    JSON.stringify({ type: 'answer', payload: { target: payload.from, answer } })
-  );
-  hangupBtn.style.display = 'block';
+  incomingUserSpan.textContent = `${payload.from} is calling...`;
+  incomingDiv.style.display = 'block';
+
+  acceptBtn.onclick = async () => {
+    incomingDiv.style.display = 'none';
+    await ensureLocalStream();
+    currentTarget = payload.from;
+    peer = createPeer(payload.from);
+    localStream.getTracks().forEach((t) => peer.addTrack(t, localStream));
+    await peer.setRemoteDescription(payload.offer);
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+    socket.send(
+      JSON.stringify({ type: 'answer', payload: { target: payload.from, answer } })
+    );
+    hangupBtn.style.display = 'block';
+  };
+
+  declineBtn.onclick = () => {
+    incomingDiv.style.display = 'none';
+    socket.send(
+      JSON.stringify({ type: 'hangup', payload: { target: payload.from } })
+    );
+  };
 }
 
 function endCall() {
@@ -132,6 +154,7 @@ function endCall() {
   }
   remoteVideo.srcObject = null;
   hangupBtn.style.display = 'none';
+  callBtn.style.display = selectedUser ? 'block' : 'none';
   if (currentTarget) {
     socket.send(JSON.stringify({ type: 'hangup', payload: { target: currentTarget } }));
     currentTarget = null;
@@ -139,3 +162,6 @@ function endCall() {
 }
 
 hangupBtn.addEventListener('click', endCall);
+callBtn.addEventListener('click', () => {
+  if (selectedUser) startCall(selectedUser);
+});
