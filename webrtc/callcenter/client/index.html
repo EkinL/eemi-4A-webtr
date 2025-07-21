@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WebRTC Call Center</title>
+  <style>
+    #users li { cursor: pointer; }
+    video { width: 300px; height: 200px; background: black; }
+  </style>
+  <script type="module" src="script.js" defer></script>
+</head>
+<body>
+  <form id="login-form">
+    <input name="username" placeholder="Username" required />
+    <button type="submit">Join</button>
+  </form>
+  <div id="app" style="display:none;">
+    <h3>Logged in as <span id="me"></span></h3>
+    <ul id="users"></ul>
+    <button id="call" style="display:none;">Call</button>
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
+    <div id="incoming" style="display:none;">
+      <span id="incoming-user"></span>
+      <button id="accept">Accept</button>
+      <button id="decline">Decline</button>
+    </div>
+    <button id="hangup" style="display:none;">Hangup</button>
+  </div>
+</body>
+</html>
