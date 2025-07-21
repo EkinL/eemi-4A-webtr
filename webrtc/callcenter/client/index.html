@@ -3,29 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <title>WebRTC Call Center</title>
-  <style>
-    #users li { cursor: pointer; }
-    video { width: 300px; height: 200px; background: transparent; }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script type="module" src="script.js" defer></script>
 </head>
-<body>
-  <form id="login-form">
-    <input name="username" placeholder="Username" required />
-    <button type="submit">Join</button>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <form id="login-form" class="bg-white p-6 rounded shadow-md w-full max-w-xs">
+    <h2 class="text-xl font-semibold mb-4 text-center">Join Call Center</h2>
+    <input
+      name="username"
+      placeholder="Username"
+      required
+      class="w-full px-3 py-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring focus:ring-blue-300"
+    />
+    <button
+      type="submit"
+      class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+    >
+      Join
+    </button>
   </form>
-  <div id="app" style="display:none;">
-    <h3>Logged in as <span id="me"></span></h3>
-    <ul id="users"></ul>
-    <button id="call" style="display:none;">Call</button>
-    <video id="localVideo" autoplay muted playsinline></video>
-    <video id="remoteVideo" autoplay playsinline></video>
-    <div id="incoming" style="display:none;">
-      <span id="incoming-user"></span>
-      <button id="accept">Accept</button>
-      <button id="decline">Decline</button>
+
+  <div id="app" class="hidden w-full max-w-5xl mx-auto p-6 space-y-6">
+    <div class="flex justify-between items-center">
+      <h3 class="text-xl font-bold text-gray-700">Logged in as <span id="me" class="text-blue-600"></span></h3>
+      <button id="hangup" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 hidden">Hangup</button>
     </div>
-    <button id="hangup" style="display:none;">Hangup</button>
+
+    <div>
+      <h4 class="font-semibold text-gray-600 mb-2">Available Users</h4>
+      <ul id="users" class="bg-white shadow rounded divide-y divide-gray-200 max-h-60 cursor-pointer overflow-y-auto hover:bg-gray-50">
+      </ul>
+    </div>
+
+    <button
+      id="call"
+      class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition hidden"
+    >
+      Call
+    </button>
+
+    <div class="flex flex-col md:flex-row gap-4">
+      <video id="localVideo" autoplay muted playsinline class="bg-transparent rounded shadow w-full md:w-1/2 h-64"></video>
+      <video id="remoteVideo" autoplay playsinline class="bg-transparent rounded shadow w-full md:w-1/2 h-64"></video>
+    </div>
+
+    <div id="incoming" class="bg-yellow-100 border border-yellow-300 rounded p-4 flex items-center justify-between hidden">
+      <div class="text-yellow-800 font-medium">
+        Incoming call from <span id="incoming-user" class="font-bold"></span>
+      </div>
+      <div class="space-x-2">
+        <button id="accept" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Accept</button>
+        <button id="decline" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Decline</button>
+      </div>
+    </div>
   </div>
 </body>
 </html>
